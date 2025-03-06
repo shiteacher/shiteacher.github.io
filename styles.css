@@ -153,19 +153,30 @@ button {
     gap: 8px;
 }
 
-#setup input {
+#setup {
+    display: flex;
+    flex-direction: column; /* 上下两行布局 */
+    gap: 10px; /* 输入框和按钮之间的间距 */
+    max-width: 500px; /* 限制最大宽度 */
+    margin: 0 auto; /* 居中 */
+}
+
+#setup input,
+#setup button {
+    width: 100%; /* 输入框和按钮占据全部宽度 */
     padding: 12px;
-    width: 100%;
-    margin-bottom: 15px;
     border: 2px solid #4a90e2;
     border-radius: 8px;
     font-size: 1em;
+    box-sizing: border-box;
 }
 
 #setup button {
     background: #4a90e2;
     color: white;
-    width: 100%;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 #setup button:hover {
@@ -238,7 +249,7 @@ button {
 }
 
 .hidden {
-    display: none;
+    display: none !important; /* 确保隐藏逻辑优先级 */
 }
 
 h1 {
@@ -295,6 +306,8 @@ h2 {
     }
 
     #game-area {
+        max-width: 100%;
+        overflow: hidden;
         padding: 15px;
     }
 
@@ -324,5 +337,10 @@ h2 {
         width: 50px;
         height: 50px;
         font-size: 28px;
+    }
+
+    #setup input {
+        width: 100%;
+        max-width: 100%;
     }
 }
