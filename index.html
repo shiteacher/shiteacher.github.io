@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学小游戏导航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #83a4d4, #b6fbff);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .nav-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 15px;
+            text-decoration: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .nav-card:nth-child(1) {
+            border-left: 5px solid #4CAF50;
+        }
+
+        .nav-card:nth-child(2) {
+            border-left: 5px solid #FF9800;
+        }
+
+        .nav-title {
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-desc {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 科学小游戏集合</h1>
+        <div class="nav-grid">
+            <a href="./yuansu/index.html" class="nav-card">
+                <h2 class="nav-title">元素大比拼</h2>
+                <p class="nav-desc">快速背诵元素周期表，挑战原子序数到元素符号的精准对应！</p>
+            </a>
+            
+            <a href="./huaxueshi/index.html" class="nav-card">
+                <h2 class="nav-title">化学式大比拼</h2>
+                <p class="nav-desc">化学式快速识别挑战，成为物质组成记忆达人！</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
