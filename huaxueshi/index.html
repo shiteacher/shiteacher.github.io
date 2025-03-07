@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>化学式大比拼</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="score-area">
+        <h2>🏆 得分榜</h2>
+        <div class="players-container" id="players"></div>
+    </div>
+
+    <div id="game-area">
+        <h1>🧪 化学式大比拼</h1>
+        <div id="setup">
+            <input type="number" id="playerCount" placeholder="请输入玩家数量 (1-20)" min="1" max="20">
+            <button onclick="startGame()">▶️ 开始游戏</button>
+        </div>
+        
+        <div id="gameInterface" class="hidden">
+            <div class="mode-controls">
+                <button class="mode-btn active" onclick="setMode('formula')">🔤 猜名称</button>
+                <button class="mode-btn" onclick="setMode('name')">🧪 猜化学式</button>
+                <button class="mode-btn" onclick="setMode('mixed')">🎲 混合模式</button>
+            </div>
+            
+            <div id="question"></div>
+            <div class="controls">
+                <button onclick="showAnswer()">👀 显示答案</button>
+                <button class="skip-btn" onclick="skipQuestion()">⏭️ 跳过题目</button>
+                <div id="judge-buttons"></div>
+            </div>
+            <div id="answer"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
