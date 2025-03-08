@@ -23,7 +23,7 @@
             /* 增加左右内边距 */
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            height: 80vh;
+            /*height: 80vh;*/
             overflow-y: auto;
             position: sticky;
             top: 20px;
@@ -100,11 +100,30 @@
             /* 新增卡片外边距 */
             padding: 12px;
             min-width: 180px;
+            transition: all 0.3s ease;
         }
 
         .player-card.active {
-            background: #ffcccc !important;
-            border-color: #ff9999 !important;
+            background: #ffe0e0 !important;
+            border-color: #ff4d4d !important;
+            box-shadow: 0 2px 8px rgba(255, 77, 77, 0.2);
+            /* 新增阴影增强效果 */
+            animation: activePulse 1.5s ease infinite;
+        }
+
+        /* 添加呼吸动画效果 */
+        @keyframes activePulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .avatar {
@@ -149,7 +168,7 @@
 
         /* 题目区域 */
         #question {
-            font-size: 2.8em;
+            font-size: 4em;
             margin: 40px 0;
             color: #2c3e50;
             text-align: center;
@@ -304,6 +323,177 @@
             .player-card {
                 margin: 0 2px;
             }
+
+            .status-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            #countdown {
+                position: static;
+                transform: none;
+                order: -1;
+                /* 倒计时显示在上方 */
+            }
+
+            .timer-panel {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            #timerInput {
+                flex: 1;
+            }
+
+            .timer-btn {
+                width: auto;
+            }
+
+            @keyframes activePulse {
+                0% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.03);
+                }
+
+                100% {
+                    transform: scale(1);
+                }
+            }
+        }
+
+        /* ===== 倒计时相关样式 ===== */
+        .timer-panel {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            /* 强制右对齐 */
+            width: auto;
+            /* 根据内容自适应宽度 */
+            margin-left: auto;
+            /* 关键属性：向右推挤 */
+        }
+
+        #timerInput {
+            width: 40px;
+            padding: 8px;
+            border: 2px solid #4a90e2;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .timer-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timer-control input {
+            width: 60px;
+            padding: 8px;
+            border: 2px solid #4a90e2;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .timer-btn {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            /* 在原有样式基础上添加 */
+            font-size: 0.9em;
+            /* 调整为更小字号 */
+            padding: 6px 16px;
+            /* 微调内边距保持比例 */
+        }
+
+        .timer-btn:hover {
+            background: #357abd;
+        }
+
+        .game-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+            /* 新增：允许换行 */
+        }
+
+        .current-players {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            /* 允许换行 */
+            max-width: 100%;
+            /* 限制最大宽度 */
+        }
+
+        .player-tag {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: #f0f2f5;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .player-tag.active {
+            background: #ff4d4d !important;
+            /* 更鲜艳的红色 */
+            color: white !important;
+            /* 白色文字 */
+            font-weight: bold;
+            animation: activePulse 1.5s ease infinite;
+            box-shadow: 0 2px 8px rgba(255, 77, 77, 0.3);
+        }
+
+        @keyframes activePulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 2px 8px rgba(255, 77, 77, 0.3);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 4px 12px rgba(255, 77, 77, 0.5);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 2px 8px rgba(255, 77, 77, 0.3);
+            }
+        }
+
+        #countdown {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 35px;
+            /* 调大字体尺寸 */
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: relative;
+            /* 为绝对定位做准备 */
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -322,10 +512,21 @@
         </div>
 
         <div id="gameInterface" class="hidden">
+            <!-- 状态显示区域 -->
+            <div class="game-status">
+                <div class="status-row">
+                    <div id="countdown"></div>
+                    <div class="timer-panel">
+                        <input type="number" id="timerInput" value="5" min="3" max="30">
+                        <button class="timer-btn" onclick="applyTimer()">应用时间</button>
+                    </div>
+                </div>
+                <div class="current-players" id="currentPlayers"></div>
+            </div>
             <div class="mode-controls">
-                <button class="mode-btn active" onclick="setMode('symbol')">🔣 猜元素名</button>
-                <button class="mode-btn" onclick="setMode('name')">🔤 猜符号</button>
-                <button class="mode-btn" onclick="setMode('mixed')">🎲 混合模式</button>
+                <button class="mode-btn active" data-mode="symbol" onclick="setMode('symbol')">🔣 猜元素名</button>
+                <button class="mode-btn" data-mode="name" onclick="setMode('name')">🔤 猜符号</button>
+                <button class="mode-btn" data-mode="mixed" onclick="setMode('mixed')">🎲 混合模式</button>
             </div>
 
             <div id="question"></div>
@@ -339,25 +540,150 @@
     </div>
 
     <script>
-        const icons = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯',
-            '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦄'];
+        // ================= 倒计时功能 =================
+        let timerDuration = 5;
+        let countdownInterval = null;
 
+        function adjustTimer(step) {
+            const input = document.getElementById('timerInput');
+            let value = parseInt(input.value) + step;
+            value = Math.max(3, Math.min(value, 30));
+            input.value = value;
+        }
+
+        function applyTimer() {
+            timerDuration = parseInt(document.getElementById('timerInput').value);
+            alert(`倒计时已设置为 ${timerDuration} 秒`);
+        }
+
+        function startCountdown() {
+            clearInterval(countdownInterval);
+            let remaining = timerDuration;
+            const countdownElement = document.getElementById('countdown');
+
+            countdownElement.textContent = `${remaining}s`;
+
+            countdownInterval = setInterval(() => {
+                remaining--;
+                countdownElement.textContent = `${remaining}s`;
+
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    showAnswer();
+                }
+            }, 1000);
+        }
+
+        function updatePlayersDisplay() {
+            const container = document.getElementById('currentPlayers');
+            container.innerHTML = players.map(p => `
+        <div class="player-tag ${p.id === players[currentPlayerIndex]?.id ? 'active' : ''}">
+            ${p.icon} #${p.id}
+        </div>
+    `).join('');
+        }
+        // ================= 新增配置 =================
+        const MAX_RECENT = 3;    // 最近不重复元素数量
+        const WRONG_WEIGHT = 3;   // 错误题权重倍数
+        const MIN_INTERVAL = 5000;// 同一元素最小出现间隔(毫秒)
+
+        // ================= 修改元素数据结构 =================
         const elements = {
-            "H": "氢", "He": "氦", "Li": "锂", "Be": "铍",
-            "B": "硼", "C": "碳", "N": "氮", "O": "氧",
-            "F": "氟", "Ne": "氖", "Na": "钠", "Mg": "镁",
-            "Al": "铝", "Si": "硅", "P": "磷", "S": "硫",
-            "Cl": "氯", "Ar": "氩", "K": "钾", "Ca": "钙",
-            "Fe": "铁", "Cu": "铜", "Zn": "锌", "Ag": "银",
+            "H": "氢", "He": "氦", "Li": "锂", "Be": "铍", "B": "硼", "C": "碳",
+            "N": "氮", "O": "氧", "F": "氟", "Ne": "氖", "Na": "钠", "Mg": "镁",
+            "Al": "铝", "Si": "硅", "P": "磷", "S": "硫", "Cl": "氯", "Ar": "氩",
+            "K": "钾", "Ca": "钙", "Fe": "铁", "Cu": "铜", "Zn": "锌", "Ag": "银",
             "Au": "金", "Hg": "汞", "Pb": "铅"
         };
 
+        let allElements = Object.entries(elements).map(([symbol, name]) => ({
+            symbol, name,
+            correct: 0,  // 新增：正确次数
+            wrong: 0,    // 新增：错误次数
+            lastUsed: 0  // 新增：最后使用时间
+        }));
+
+        // ================= 新增状态变量 =================
+        let recentElements = [];  // 最近使用的元素队列
+        let currentElement;        // 当前题目对应的元素
+
+        // ================= 修改后的核心逻辑 =================
+        function getWeightedElement() {
+            const now = Date.now();
+            // 过滤条件：不在最近队列且超过最小间隔时间
+            const candidates = allElements.filter(e =>
+                !recentElements.includes(e) &&
+                (now - e.lastUsed) > MIN_INTERVAL
+            );
+
+            const pool = candidates.length > 0 ? candidates : allElements;
+            // 计算总权重（错误次数*权重 + 1防止0权重）
+            const totalWeight = pool.reduce((sum, e) => sum + (e.wrong * WRONG_WEIGHT + 1), 0);
+            let random = Math.random() * totalWeight;
+
+            // 轮盘赌选择算法
+            for (const el of pool) {
+                random -= el.wrong * WRONG_WEIGHT + 1;
+                if (random <= 0) {
+                    el.lastUsed = now;
+                    return el;
+                }
+            }
+            return pool[0];
+        }
+
+        function newQuestion(changePlayer = true) {
+            // 清除旧倒计时
+            clearInterval(countdownInterval);
+            document.getElementById('countdown').textContent = "";
+            document.getElementById('judge-buttons').classList.remove('visible');
+            document.getElementById('answer').textContent = '';
+
+            if (changePlayer) {
+                const min = Math.min(...players.map(p => p.totalAnswers));
+                const candidates = players.filter(p => p.totalAnswers === min);
+                const next = candidates[Math.floor(Math.random() * candidates.length)];
+                currentPlayerIndex = players.findIndex(p => p.id === next.id);
+                players[currentPlayerIndex].totalAnswers++;
+            }
+
+            // ================= 修改的题目生成部分 =================
+            currentElement = getWeightedElement();
+            recentElements.push(currentElement);
+            if (recentElements.length > MAX_RECENT) recentElements.shift();
+
+            const mode = currentMode === 'mixed' ?
+                Math.random() > 0.5 ? 'symbol' : 'name' : currentMode;
+
+            currentQuestion = mode === 'symbol' ? currentElement.symbol : currentElement.name;
+            currentAnswer = mode === 'symbol' ? currentElement.name : currentElement.symbol;
+
+            document.getElementById('question').textContent = currentQuestion;
+            renderPlayers();
+            updatePlayersDisplay();
+            startCountdown();
+        }
+
+        // ================= 修改判题逻辑 =================
+        function handleJudgement(isCorrect) {
+            const p = players[currentPlayerIndex];
+            if (isCorrect) {
+                currentElement.correct++;
+                p.score += 1;
+                p.correctAnswers++;
+            } else {
+                currentElement.wrong++; // 记录元素错误次数
+            }
+            renderPlayers();
+            newQuestion();
+        }
+
+        // ================= 以下保持原有代码不变 =================
         let currentMode = 'symbol';
-        let currentQuestion = '';
-        let currentAnswer = '';
         let players = [];
         let currentPlayerIndex = -1;
-        const allElements = Object.entries(elements).map(([s, n]) => ({ symbol: s, name: n }));
+        const icons = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯',
+            '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦄'];
 
         function startGame() {
             const count = parseInt(document.getElementById('playerCount').value);
@@ -379,7 +705,6 @@
         function renderPlayers() {
             const container = document.getElementById('players');
             const sorted = [...players].sort((a, b) => b.score - a.score);
-
             container.innerHTML = sorted.map((p, i) => `
                 <div class="player-card ${i < 3 ? 'rank-' + (i + 1) : ''} ${p.id === players[currentPlayerIndex]?.id ? 'active' : ''}">
                     <div class="avatar">${p.icon}</div>
@@ -395,33 +720,9 @@
             `).join('');
         }
 
-        function getNextPlayer() {
-            const min = Math.min(...players.map(p => p.totalAnswers));
-            const candidates = players.filter(p => p.totalAnswers === min);
-            return candidates[Math.floor(Math.random() * candidates.length)];
-        }
-
-        function newQuestion(changePlayer = true) {
-            document.getElementById('judge-buttons').classList.remove('visible');
-            document.getElementById('answer').textContent = '';
-
-            if (changePlayer) {
-                const next = getNextPlayer();
-                currentPlayerIndex = players.findIndex(p => p.id === next.id);
-                players[currentPlayerIndex].totalAnswers++;
-            }
-
-            const mode = currentMode === 'mixed' ? Math.random() > 0.5 ? 'symbol' : 'name' : currentMode;
-            const { symbol, name } = allElements[Math.floor(Math.random() * allElements.length)];
-
-            currentQuestion = mode === 'symbol' ? symbol : name;
-            currentAnswer = mode === 'symbol' ? name : symbol;
-
-            document.getElementById('question').textContent = currentQuestion;
-            renderPlayers();
-        }
-
         function showAnswer() {
+            clearInterval(countdownInterval);
+            document.getElementById('countdown').textContent = "时间到！";
             document.getElementById('answer').textContent = currentAnswer;
             document.getElementById('judge-buttons').innerHTML = `
                 <button class="judge-btn correct" onclick="handleJudgement(true)">✓</button>
@@ -430,23 +731,12 @@
             document.getElementById('judge-buttons').classList.add('visible');
         }
 
-        function handleJudgement(isCorrect) {
-            const p = players[currentPlayerIndex];
-            if (isCorrect) {
-                p.score += 1;
-                p.correctAnswers++;
-            }
-            renderPlayers();
-            newQuestion();
-        }
-
         function skipQuestion() { newQuestion(false); }
-
         function setMode(mode) {
             currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(btn =>
-                btn.classList.toggle('active', btn.textContent.includes(mode))
-            );
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
             newQuestion();
         }
     </script>
