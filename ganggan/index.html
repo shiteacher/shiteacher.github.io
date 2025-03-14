@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>杠杆原理模拟器</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #6c5ce7;
+            --background: #f0f4f8;
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #2d3436;
+            --text-secondary: #636e72;
+        }
+
+        body {
+            margin: 20px;
+            background: var(--background);
+            font-family: 'Segoe UI', system-ui;
+            display: flex;
+            gap: 20px;
+            color: var(--text-primary);
+        }
+
+        #canvas-container {
+            width: 1000px;
+            height: 800px;
+            background: var(--panel-bg);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .control-panel {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        legend {
+            color: var(--primary-color);
+            padding: 0 15px;
+            font-weight: 700;
+            font-size: 1.2em;
+            letter-spacing: 0.5px;
+        }
+
+        .control-group {
+            margin: 20px 0;
+        }
+
+        label {
+            display: block;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            -webkit-appearance: none;
+            margin: 12px 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        input[type="number"] {
+            width: 90px;
+            padding: 8px 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 0.95em;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        #dial-canvas {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            margin: 15px auto;
+            display: block;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .value-display {
+            color: var(--primary-color);
+            font-weight: 700;
+            text-align: center;
+            margin: 8px 0;
+            font-size: 1em;
+        }
+
+        .data-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+        }
+
+        .reset-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .reset-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas-container" width="1000" height="800"></canvas>
+
+    <fieldset class="control-panel">
+        <legend>控制面板</legend>
+
+        <div class="control-group">
+            <label>杠杆角度 <span class="value-display" id="lever-angle-value">0°</span></label>
+            <input type="range" id="lever-angle-slider" min="-90" max="90" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>施力方向</label>
+            <canvas id="dial-canvas" width="100" height="100"></canvas>
+            <div class="value-display" id="force-angle-value">0°</div>
+        </div>
+
+        <div class="control-group">
+            <label>杠杆长度 <span class="value-display" id="scale-value">3.8m</span></label>
+            <input type="range" id="scale-slider" min="0.5" max="2" value="1" step="0.1">
+        </div>
+
+        <div class="data-panel">
+            <div class="data-item">
+                <span>物体重量：</span>
+                <input type="number" id="weight-input" value="50" min="1" step="1">
+            </div>
+            <div class="data-item">
+                <span>所需拉力：</span>
+                <span class="value-display" id="f-display">0.00N</span>
+            </div>
+            <div class="data-item">
+                <span>F力臂：</span>
+                <span class="value-display" id="f-arm-display">0.00m</span>
+            </div>
+            <div class="data-item">
+                <span>G力臂：</span>
+                <span class="value-display" id="g-arm-display">0.00m</span>
+            </div>
+        </div>
+
+        <button class="reset-btn" onclick="resetSystem()">重置系统</button>
+    </fieldset>
+
+    <script>
+        const canvas = document.getElementById('canvas-container');
+        const ctx = canvas.getContext('2d');
+        const dialCanvas = document.getElementById('dial-canvas');
+        const dialCtx = dialCanvas.getContext('2d');
+        const weightInput = document.getElementById('weight-input');
+
+        // 状态变量
+        let leverAngle = 0;
+        let forceAngle = 0;
+        let scale = 1;
+        let G = 50;
+        const pivot = { x: 200, y: 400 };
+        const baseLength = 380;
+        const scaleFactor = 0.01;
+        let isDragging = false;
+        let isAutoAdjusting = false;
+
+        // 初始化方向控制器
+        function initDial() {
+            dialCtx.translate(50, 50);
+            drawDial();
+        }
+
+        function drawDial() {
+            dialCtx.clearRect(-50, -50, 100, 100);
+            dialCtx.beginPath();
+            dialCtx.arc(0, 0, 40, 0, Math.PI * 2);
+            dialCtx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+            dialCtx.lineWidth = 2;
+            dialCtx.stroke();
+
+            for (let i = 0; i < 360; i += 30) {
+                dialCtx.save();
+                dialCtx.rotate(i * Math.PI / 180);
+                dialCtx.beginPath();
+                dialCtx.moveTo(0, -35);
+                dialCtx.lineTo(0, -30);
+                dialCtx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                dialCtx.stroke();
+                dialCtx.restore();
+            }
+
+            dialCtx.save();
+            dialCtx.rotate(forceAngle * Math.PI / 180);
+            dialCtx.beginPath();
+            dialCtx.moveTo(0, 0);
+            dialCtx.lineTo(0, -30);
+            dialCtx.strokeStyle = '#4a90e2';
+            dialCtx.lineWidth = 3;
+            dialCtx.stroke();
+            dialCtx.beginPath();
+            dialCtx.arc(0, 0, 3, 0, Math.PI * 2);
+            dialCtx.fillStyle = '#4a90e2';
+            dialCtx.fill();
+            dialCtx.restore();
+        }
+
+        function drawSystem() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            G = parseInt(weightInput.value) || 50;
+
+            // 绘制墙壁
+            ctx.fillStyle = '#e0e6eb';
+            ctx.fillRect(pivot.x - 50, 250, 50, 300);
+
+            const maxLength = Math.min(
+                (canvas.width - pivot.x) / Math.abs(Math.cos(leverAngle * Math.PI / 180)),
+                (canvas.height - pivot.y) / Math.abs(Math.sin(leverAngle * Math.PI / 180)),
+                baseLength * 2
+            );
+
+            const desiredLength = baseLength * scale;
+            let effectiveLength = Math.min(desiredLength, maxLength);
+
+            if (desiredLength > maxLength) {
+                isAutoAdjusting = true;
+                scale = maxLength / baseLength;
+                effectiveLength = maxLength;
+                document.getElementById('scale-slider').value = scale.toFixed(1);
+                document.getElementById('scale-value').textContent = `${(3.8 * scale).toFixed(1)}m`;
+                isAutoAdjusting = false;
+            }
+
+            const leverRad = leverAngle * Math.PI / 180;
+            const endX = pivot.x + effectiveLength * Math.cos(leverRad);
+            const endY = pivot.y + effectiveLength * Math.sin(leverRad);
+            const midX = (pivot.x + endX) / 2;
+            const midY = (pivot.y + endY) / 2;
+
+            // 绘制杠杆
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(pivot.x, pivot.y);
+            ctx.lineTo(endX, endY);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = '#2d3436';
+            ctx.stroke();
+            ctx.restore();
+
+            // 绘制支点
+            ctx.beginPath();
+            ctx.arc(pivot.x, pivot.y, 14, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff4757';
+            ctx.shadowColor = 'rgba(255, 71, 87, 0.3)';
+            ctx.shadowBlur = 8;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // 悬挂物体
+            const objCenter = { x: midX, y: midY + 70 };
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(midX, midY);
+            ctx.lineTo(midX, objCenter.y);
+            ctx.strokeStyle = '#a0aec0';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.fillStyle = '#48bb78';
+            ctx.shadowColor = 'rgba(72, 187, 120, 0.2)';
+            ctx.shadowBlur = 6;
+            ctx.fillRect(objCenter.x - 18, objCenter.y, 36, 36);
+            ctx.shadowBlur = 0;
+            ctx.restore();
+
+            // 绘制作用力（箭头位置上移）
+            const forceLength = 100; // 增加长度
+            const forceRad = (forceAngle - 90) * Math.PI / 180;
+            const forceEndX = endX + forceLength * Math.cos(forceRad);
+            const forceEndY = endY + forceLength * Math.sin(forceRad);
+
+            ctx.beginPath();
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(forceEndX, forceEndY);
+            ctx.strokeStyle = '#4a90e2';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // 绘制箭头（位置调整）
+            ctx.save();
+            ctx.translate(forceEndX, forceEndY);
+            ctx.rotate(forceRad);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-18, -12);  // 加大箭头尺寸
+            ctx.lineTo(-18, 12);
+            ctx.closePath();
+            ctx.fillStyle = '#4a90e2';
+            ctx.fill();
+            ctx.restore();
+
+            // 力臂计算
+            const F_projection = getForceProjection(endX, endY, forceRad);
+            const G_projection = getForceProjection(objCenter.x, objCenter.y, Math.PI / 2);
+
+            const fArm = Math.hypot(F_projection.x - pivot.x, F_projection.y - pivot.y) * scaleFactor;
+            const gArm = Math.hypot(G_projection.x - pivot.x, G_projection.y - pivot.y) * scaleFactor;
+            const F = gArm !== 0 ? (G * gArm) / fArm : Infinity;
+
+            document.getElementById('f-arm-display').textContent = `${fArm.toFixed(2)}m`;
+            document.getElementById('g-arm-display').textContent = `${gArm.toFixed(2)}m`;
+            document.getElementById('f-display').textContent =
+                F === Infinity ? "∞ N" : `${Math.abs(F).toFixed(2)}N`;
+
+            // 绘制力臂辅助线（F力臂颜色与力相同）
+            ctx.save();
+            ctx.setLineDash([5, 3]);
+
+            ctx.beginPath();
+            ctx.moveTo(pivot.x, pivot.y);
+            ctx.lineTo(F_projection.x, F_projection.y);
+            ctx.strokeStyle = '#4a90e2'; // 改为力F颜色
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(pivot.x, pivot.y);
+            ctx.lineTo(G_projection.x, G_projection.y);
+            ctx.strokeStyle = '#48bb78';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(F_projection.x, F_projection.y);
+            ctx.strokeStyle = '#a0aec0';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(objCenter.x, objCenter.y);
+            ctx.lineTo(G_projection.x, G_projection.y);
+            ctx.strokeStyle = '#a0aec0';
+            ctx.stroke();
+
+            ctx.restore();
+
+            // 绘制动态力臂指示条（数值标在矩形框上方）
+            const drawArmIndicator = (start, end, color) => {
+                const midX = (start.x + end.x) / 2;
+                const midY = (start.y + end.y) / 2;
+                const length = Math.hypot(end.x - start.x, end.y - start.y);
+                const angle = Math.atan2(end.y - start.y, end.x - start.x);
+
+                ctx.save();
+                ctx.translate(midX, midY);
+                ctx.rotate(angle);
+
+                // 绘制指示条（带50%透明度）
+                ctx.fillStyle = color + '80';
+                ctx.fillRect(-length / 2, 20, length, 6);
+
+                // 绘制数值（在矩形条内部）
+                ctx.fillStyle = color;
+                ctx.font = 'bold 13px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(
+                    `${(length * scaleFactor).toFixed(2)}m`,
+                    0,
+                    20 + 3 // 20是矩形顶部，+3到达垂直中心
+                );
+
+                ctx.restore();
+            };
+
+            drawArmIndicator(pivot, F_projection, '#4a90e2'); // 改为力F颜色
+            drawArmIndicator(pivot, G_projection, '#48bb78');
+        }
+
+        function getForceProjection(x, y, angle) {
+            const a = Math.cos(angle);
+            const b = Math.sin(angle);
+            const t = (a * (pivot.x - x) + b * (pivot.y - y)) / (a * a + b * b);
+            return { x: x + a * t, y: y + b * t };
+        }
+
+        function handleDialDrag(e) {
+            if (!isDragging) return;
+            const rect = dialCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - 50;
+            const y = e.clientY - rect.top - 50;
+            let angle = Math.atan2(y, x) * 180 / Math.PI;
+            forceAngle = (angle + 90 + 360) % 360;
+            document.getElementById('force-angle-value').textContent = `${Math.round(forceAngle)}°`;
+            drawDial();
+            drawSystem();
+        }
+
+        function resetSystem() {
+            leverAngle = 0;
+            forceAngle = 0;
+            scale = 1;
+            weightInput.value = 50;
+            document.getElementById('lever-angle-slider').value = 0;
+            document.getElementById('force-angle-value').textContent = '0°';
+            document.getElementById('scale-value').textContent = '3.8m';
+            drawDial();
+            drawSystem();
+        }
+
+        // 事件监听
+        weightInput.addEventListener('input', () => {
+            if (weightInput.value < 1) weightInput.value = 1;
+            drawSystem();
+        });
+
+        dialCanvas.addEventListener('mousedown', () => isDragging = true);
+        document.addEventListener('mouseup', () => isDragging = false);
+        document.addEventListener('mousemove', handleDialDrag);
+
+        document.getElementById('lever-angle-slider').addEventListener('input', (e) => {
+            leverAngle = e.target.value;
+            document.getElementById('lever-angle-value').textContent = `${leverAngle}°`;
+            drawSystem();
+        });
+
+        document.getElementById('scale-slider').addEventListener('input', (e) => {
+            if (isAutoAdjusting) return;
+            scale = parseFloat(e.target.value);
+            document.getElementById('scale-value').textContent = `${(3.8 * scale).toFixed(1)}m`;
+            drawSystem();
+        });
+
+        // 初始化
+        initDial();
+        drawSystem();
+    </script>
+</body>
+
+</html>

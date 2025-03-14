@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>元素大比拼</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 60px;
+            background: #f0f2f5;
+        }
+
+        #score-area {
+            background: #ffffff;
+            padding: 20px 15px;
+            /* 增加左右内边距 */
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            height: 80vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+            width: 100%;
+            min-width: 400px;
+            /* 新增最小宽度限制 */
+        }
+
+        #game-area {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 输入框样式 */
+        #setup {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        #setup input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        #setup button {
+            width: 100%;
+            padding: 12px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #setup button:hover {
+            background: #357abd;
+        }
+
+        /* 玩家得分榜 */
+        .players-container {
+            display: grid;
+            margin-top: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            /* 自适应布局 */
+            gap: 12px;
+            /* 增大间隙 */
+            padding: 0 8px;
+            /* 新增容器内边距 */
+        }
+
+        .player-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: transform 0.2s;
+            border: 1px solid #e9ecef;
+            /* 防止内容挤压 */
+            padding: 12px 15px;
+            /* 增加水平内边距 */
+            margin: 0 4px;
+            /* 新增卡片外边距 */
+            padding: 12px;
+            min-width: 180px;
+        }
+
+        .player-card.active {
+            background: #ffcccc !important;
+            border-color: #ff9999 !important;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #4a90e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+        }
+
+        .player-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: #343a40;
+            font-size: 0.95em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-score {
+            color: #28a745;
+            font-size: 0.85em;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 10px;
+            font-size: 0.8em;
+            color: #6c757d;
+        }
+
+        /* 题目区域 */
+        #question {
+            font-size: 2.8em;
+            margin: 40px 0;
+            color: #2c3e50;
+            text-align: center;
+            min-height: 80px;
+            font-weight: 600;
+        }
+
+        #answer {
+            font-size: 2em;
+            color: #d6336c;
+            margin: 25px 0;
+            text-align: center;
+            min-height: 60px;
+        }
+
+        /* 控制按钮 */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-width: 500px;
+            margin: 30px auto;
+        }
+
+        button {
+            padding: 14px 28px;
+            font-size: 1.05em;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .mode-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+        }
+
+        .mode-btn.active {
+            background: #4a90e2 !important;
+        }
+
+        .skip-btn {
+            background: #ffc107;
+            color: #343a40;
+        }
+
+        /* 判题按钮 */
+        #judge-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #judge-buttons.visible {
+            opacity: 1;
+            height: 72px;
+        }
+
+        .judge-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .judge-btn.correct {
+            color: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        .judge-btn.correct:hover {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .judge-btn.wrong {
+            color: #f44336;
+            border-color: #f44336;
+        }
+
+        .judge-btn.wrong:hover {
+            background: #f44336;
+            color: white;
+        }
+
+        /* 排名样式 */
+        .player-card.rank-1 {
+            background: #ffd700;
+        }
+
+        .player-card.rank-2 {
+            background: #c0c0c0;
+        }
+
+        .player-card.rank-3 {
+            background: #cd7f32;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                /* 缩小移动端间距 */
+            }
+
+            #score-area {
+                min-width: unset;
+                /* 移除最小宽度限制 */
+            }
+
+            .players-container {
+                grid-template-columns: 1fr;
+                /* 移动端单列布局 */
+                padding: 0 10px;
+                /* 移动端增加内边距 */
+            }
+
+            #question {
+                font-size: 2.2em;
+            }
+
+            .player-card {
+                margin: 0 2px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="score-area">
+        <h2>🏆 元素大师榜</h2>
+        <div class="players-container" id="players"></div>
+    </div>
+
+    <div id="game-area">
+        <h1>⚛️ 元素大比拼</h1>
+        <div id="setup">
+            <input type="number" id="playerCount" placeholder="请输入玩家数量 (1-20)" min="1" max="20">
+            <button onclick="startGame()">▶️ 开始游戏</button>
+        </div>
+
+        <div id="gameInterface" class="hidden">
+            <div class="mode-controls">
+                <button class="mode-btn active" data-mode="symbol" onclick="setMode('symbol')">🔣 猜元素名</button>
+                <button class="mode-btn" data-mode="name" onclick="setMode('name')">🔤 猜符号</button>
+                <button class="mode-btn" data-mode="mixed" onclick="setMode('mixed')">🎲 混合模式</button>
+            </div>
+
+            <div id="question"></div>
+            <div class="controls">
+                <button onclick="showAnswer()">👀 显示答案</button>
+                <button class="skip-btn" onclick="skipQuestion()">⏭️ 跳过题目</button>
+                <div id="judge-buttons"></div>
+            </div>
+            <div id="answer"></div>
+        </div>
+    </div>
+
+    <script>
+        // ================= 新增配置 =================
+        const MAX_RECENT = 3;    // 最近不重复元素数量
+        const WRONG_WEIGHT = 3;   // 错误题权重倍数
+        const MIN_INTERVAL = 5000;// 同一元素最小出现间隔(毫秒)
+
+        // ================= 修改元素数据结构 =================
+        const elements = {
+            "H": "氢", "He": "氦", "Li": "锂", "Be": "铍", "B": "硼", "C": "碳",
+            "N": "氮", "O": "氧", "F": "氟", "Ne": "氖", "Na": "钠", "Mg": "镁",
+            "Al": "铝", "Si": "硅", "P": "磷", "S": "硫", "Cl": "氯", "Ar": "氩",
+            "K": "钾", "Ca": "钙", "Fe": "铁", "Cu": "铜", "Zn": "锌", "Ag": "银",
+            "Au": "金", "Hg": "汞", "Pb": "铅"
+        };
+
+        let allElements = Object.entries(elements).map(([symbol, name]) => ({
+            symbol, name,
+            correct: 0,  // 新增：正确次数
+            wrong: 0,    // 新增：错误次数
+            lastUsed: 0  // 新增：最后使用时间
+        }));
+
+        // ================= 新增状态变量 =================
+        let recentElements = [];  // 最近使用的元素队列
+        let currentElement;        // 当前题目对应的元素
+
+        // ================= 修改后的核心逻辑 =================
+        function getWeightedElement() {
+            const now = Date.now();
+            // 过滤条件：不在最近队列且超过最小间隔时间
+            const candidates = allElements.filter(e =>
+                !recentElements.includes(e) &&
+                (now - e.lastUsed) > MIN_INTERVAL
+            );
+
+            const pool = candidates.length > 0 ? candidates : allElements;
+            // 计算总权重（错误次数*权重 + 1防止0权重）
+            const totalWeight = pool.reduce((sum, e) => sum + (e.wrong * WRONG_WEIGHT + 1), 0);
+            let random = Math.random() * totalWeight;
+
+            // 轮盘赌选择算法
+            for (const el of pool) {
+                random -= el.wrong * WRONG_WEIGHT + 1;
+                if (random <= 0) {
+                    el.lastUsed = now;
+                    return el;
+                }
+            }
+            return pool[0];
+        }
+
+        function newQuestion(changePlayer = true) {
+            document.getElementById('judge-buttons').classList.remove('visible');
+            document.getElementById('answer').textContent = '';
+
+            if (changePlayer) {
+                const min = Math.min(...players.map(p => p.totalAnswers));
+                const candidates = players.filter(p => p.totalAnswers === min);
+                const next = candidates[Math.floor(Math.random() * candidates.length)];
+                currentPlayerIndex = players.findIndex(p => p.id === next.id);
+                players[currentPlayerIndex].totalAnswers++;
+            }
+
+            // ================= 修改的题目生成部分 =================
+            currentElement = getWeightedElement();
+            recentElements.push(currentElement);
+            if (recentElements.length > MAX_RECENT) recentElements.shift();
+
+            const mode = currentMode === 'mixed' ?
+                Math.random() > 0.5 ? 'symbol' : 'name' : currentMode;
+
+            currentQuestion = mode === 'symbol' ? currentElement.symbol : currentElement.name;
+            currentAnswer = mode === 'symbol' ? currentElement.name : currentElement.symbol;
+
+            document.getElementById('question').textContent = currentQuestion;
+            renderPlayers();
+        }
+
+        // ================= 修改判题逻辑 =================
+        function handleJudgement(isCorrect) {
+            const p = players[currentPlayerIndex];
+            if (isCorrect) {
+                currentElement.correct++;
+                p.score += 1;
+                p.correctAnswers++;
+            } else {
+                currentElement.wrong++; // 记录元素错误次数
+            }
+            renderPlayers();
+            newQuestion();
+        }
+
+        // ================= 以下保持原有代码不变 =================
+        let currentMode = 'symbol';
+        let players = [];
+        let currentPlayerIndex = -1;
+        const icons = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯',
+            '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦄'];
+
+        function startGame() {
+            const count = parseInt(document.getElementById('playerCount').value);
+            if (!count || count < 1 || count > 20) return alert("请输入1-20之间的数字");
+
+            players = Array.from({ length: count }, (_, i) => ({
+                id: i + 1,
+                icon: icons[i % icons.length],
+                score: 0,
+                totalAnswers: 0,
+                correctAnswers: 0
+            }));
+
+            document.getElementById('gameInterface').classList.remove('hidden');
+            document.getElementById('setup').classList.add('hidden');
+            newQuestion();
+        }
+
+        function renderPlayers() {
+            const container = document.getElementById('players');
+            const sorted = [...players].sort((a, b) => b.score - a.score);
+            container.innerHTML = sorted.map((p, i) => `
+                <div class="player-card ${i < 3 ? 'rank-' + (i + 1) : ''} ${p.id === players[currentPlayerIndex]?.id ? 'active' : ''}">
+                    <div class="avatar">${p.icon}</div>
+                    <div class="player-info">
+                        <div class="player-name">玩家 ${p.id}</div>
+                        <div class="player-score">🎯 ${p.score} 分</div>
+                        <div class="player-stats">
+                            <span>答题: ${p.totalAnswers}</span>
+                            <span>答对: ${p.correctAnswers}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAnswer() {
+            document.getElementById('answer').textContent = currentAnswer;
+            document.getElementById('judge-buttons').innerHTML = `
+                <button class="judge-btn correct" onclick="handleJudgement(true)">✓</button>
+                <button class="judge-btn wrong" onclick="handleJudgement(false)">✕</button>
+            `;
+            document.getElementById('judge-buttons').classList.add('visible');
+        }
+
+        function skipQuestion() { newQuestion(false); }
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            newQuestion();
+        }
+    </script>
+</body>
+
+</html>
