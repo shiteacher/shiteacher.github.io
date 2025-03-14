@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>史老师科学教学平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,6 +51,8 @@
             @apply bg-white shadow-lg overflow-hidden transition-all duration-300;
             border: 1px solid rgba(229, 231, 235, 0.6);
             border-radius: 20px;
+            transform: translate3d(0, 0, 0);
+            -webkit-transform: translate3d(0, 0, 0);
         }
 
         .experiment-card:hover {
@@ -93,6 +95,36 @@
             animation: expanded 10s infinite linear;
         }
 
+        /* 新增移动端适配样式 */
+       /* 背景定位公式说明：
+原始路径中心点：(400, 210)
+放大1.5倍后新中心点 = 400/1.5 ≈ 266.67, 210/1.5=140
+补偿位移 = (400 - 266.67, 300 - 140) = (133.33, 160)
+最终采用近似值 translate(-266.67, -200) 进行微调
+*/
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .experiment-image-container {
+        min-height: 18rem;
+    }
+    
+    .element-battle-svg {
+        transform: scale(1.1);
+    }
+    
+    /* 调整电子轨道半径 */
+    @keyframes orbit {
+        0% { transform: rotate(0deg) translateX(120px) rotate(0deg); }
+        100% { transform: rotate(360deg) translateX(120px) rotate(-360deg); }
+    }
+}
+
+/* 启用硬件加速 */
+.electron-orbit {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
     </style>
 </head>
 
@@ -135,15 +167,34 @@
                 <div class="grid md:grid-cols-2 gap-8">
                     <div class="p-8 md:p-12 text-white flex flex-col justify-center">
                         <h1 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-                            智能实验教学平台
+                            史老师科学教学平台
                         </h1>
                         <p class="text-lg opacity-90 mb-6">
                             融合虚拟仿真与实时数据分析，提供安全高效的跨学科实验环境
                         </p>
-                        <div class="flex gap-4">
-                            <a href="#physics" class="px-6 py-3 bg-white text-indigo-600 rounded-xl font-semibold
-                                hover:bg-indigo-50 transition-all shadow-md hover:shadow-lg cursor-pointer">
-                                <i class="fas fa-vial mr-2"></i>开始实验
+                        <div class="hidden md:flex space-x-4">
+                            <!-- 物理实验 -->
+                            <a href="#physics" 
+                                class="px-6 py-3 bg-white text-indigo-600 rounded-xl font-semibold
+                                       hover:bg-indigo-50 transition-all shadow-md hover:shadow-lg cursor-pointer">
+                                <i class="fas fa-cogs mr-2 text-indigo-500"></i>
+                                物理实验
+                            </a>
+                        
+                            <!-- 化学模拟 -->
+                            <a href="#chemistry"
+                                class="px-6 py-3 bg-white text-emerald-600 rounded-xl font-semibold
+                                       hover:bg-emerald-50 transition-all shadow-md hover:shadow-lg cursor-pointer">
+                                <i class="fas fa-atom mr-2 text-emerald-500"></i>
+                                化学模拟
+                            </a>
+                        
+                            <!-- 生物探索 -->
+                            <a href="#biology" 
+                                class="px-6 py-3 bg-white text-amber-600 rounded-xl font-semibold
+                                       hover:bg-amber-50 transition-all shadow-md hover:shadow-lg cursor-pointer">
+                                <i class="fas fa-dna mr-2 text-amber-500"></i>
+                                生物探索
                             </a>
                         </div>
                     </div>
@@ -268,70 +319,65 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="experiment-card">
-                    <div class="experiment-image-container h-48 bg-emerald-50 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" class="element-battle-svg">
+                    <div class="experiment-image-container h-48 bg-emerald-50 flex items-center justify-center p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" class="element-battle-svg" width="100%" height="100%">
                             <style>
-                              /* 动态粒子动画 */
-                              @keyframes orbit {
-                                0% { transform: rotate(0deg); opacity: 0.9; }
-                                100% { transform: rotate(360deg); opacity: 0.2; }
-                              }
-                              
-                              .particle { animation: orbit 8s linear infinite; }
-                              .element-symbol { filter: drop-shadow(0 2px 4px rgba(5, 150, 105, 0.3)); }
+                                /* 精确的轨道动画 */
+                                @keyframes electron-orbit {
+                                    0% { transform: rotate(0deg) translateX(140px) rotate(0deg); }
+                                    100% { transform: rotate(360deg) translateX(140px) rotate(-360deg); }
+                                }
                             </style>
-                          
-                            <!-- 背景竞技场 -->
-                            <path d="M400 120Q480 180 400 300 320 180 400 120" 
-                                  fill="none" 
-                                  stroke="#059669" 
-                                  stroke-width="2"
-                                  stroke-opacity="0.1"/>
-                          
-                            <!-- 分子核心 -->
+                
+                            <!-- 分子核心 (中心定位) -->
                             <g transform="translate(400,300)">
-                              <!-- 原子核光环 -->
-                              <circle r="80" fill="url(#nucleus-gradient)" opacity="0.8"/>
-                              
-                              <!-- 动态粒子轨道 -->
-                              <g class="particle">
-                                <circle cx="120" cy="0" r="4" fill="#10B981">
-                                  <animate attributeName="cx" from="120" to="140" dur="2s" repeatCount="indefinite"/>
-                                </circle>
-                              </g>
-                          
-                              <!-- 元素符号矩阵 -->
-                              <g class="element-symbol" font-size="64" font-weight="700" fill="#059669">
-                                <text x="-180" y="-80" transform="rotate(-30)">C</text>
-                                <text x="160" y="-80" transform="rotate(30)">O</text>
-                                <text x="0" y="140">H</text>
-                              </g>
-                          
-                              <!-- 连接线动态效果 -->
-                              <g stroke="#6EE7B7" stroke-width="3" stroke-linecap="round">
-                                <path d="M-120-80L0 0" opacity="0.8">
-                                  <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.5s" repeatCount="indefinite"/>
-                                </path>
-                                <path d="M120-80L0 0" opacity="0.6">
-                                  <animate attributeName="opacity" values="0.6;0.3;0.6" dur="1.2s" repeatCount="indefinite"/>
-                                </path>
-                              </g>
+                                <!-- 原子核光环 -->
+                                <circle r="100" fill="url(#nucleus-gradient)" opacity="0.8"/>
+                
+                                <!-- 电子轨道系统 -->
+                                <g class="electron-orbit" style="animation: electron-orbit 12s linear infinite">
+                                    <circle r="8" fill="#10B981">
+                                        <!-- 脉冲效果 -->
+                                        <animate attributeName="r" 
+                                                 values="8;10;8" 
+                                                 dur="1.5s" 
+                                                 repeatCount="indefinite"/>
+                                    </circle>
+                                </g>
+                
+                                <!-- 元素符号矩阵 (放大1.3倍) -->
+                                <g transform="scale(1.3)">
+                                    <g class="element-symbol" font-size="64" font-weight="700" fill="#059669">
+                                        <text x="-180" y="-80" transform="rotate(-30)">C</text>
+                                        <text x="160" y="-80" transform="rotate(30)">O</text>
+                                        <text x="0" y="140">H</text>
+                                    </g>
+                                </g>
+                
+                                <!-- 连接线 (加粗并延长) -->
+                                <g stroke="#6EE7B7" stroke-width="4" stroke-linecap="round">
+                                    <path d="M-140-100L0 0" opacity="0.8">
+                                        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.5s" repeatCount="indefinite"/>
+                                    </path>
+                                    <path d="M140-100L0 0" opacity="0.6">
+                                        <animate attributeName="opacity" values="0.6;0.3;0.6" dur="1.2s" repeatCount="indefinite"/>
+                                    </path>
+                                </g>
                             </g>
-                          
-                            <!-- 计分板 -->
+                
+                            <!-- 计分板 (保持原位置) -->
                             <g transform="translate(600,500)">
-                              <rect width="160" height="48" rx="24" fill="#059669" opacity="0.1"/>
-                              <text x="80" y="28" font-size="24" font-weight="600" fill="#059669" text-anchor="middle">SCORE: 0</text>
+                                <rect width="160" height="48" rx="24" fill="#059669" opacity="0.1"/>
+                                <text x="80" y="28" font-size="24" font-weight="600" fill="#059669" text-anchor="middle">SCORE: 0</text>
                             </g>
-                          
-                            <!-- 渐变定义 -->
+                
                             <defs>
-                              <radialGradient id="nucleus-gradient">
-                                <stop offset="0%" stop-color="#D1FAE5"/>
-                                <stop offset="100%" stop-color="#059669" stop-opacity="0.2"/>
-                              </radialGradient>
+                                <radialGradient id="nucleus-gradient">
+                                    <stop offset="0%" stop-color="#D1FAE5"/>
+                                    <stop offset="100%" stop-color="#059669" stop-opacity="0.2"/>
+                                </radialGradient>
                             </defs>
-                          </svg>
+                        </svg>
                     </div>
                     <div class="p-6">
                         <h3 class="text-xl font-semibold text-gray-800 mb-2">元素大比拼</h3>
