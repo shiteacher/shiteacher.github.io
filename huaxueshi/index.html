@@ -1,34 +1,474 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>化学式大比拼</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>元素大比拼</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 60px;
+            background: #f0f2f5;
+        }
+
+        #score-area {
+            background: #ffffff;
+            padding: 20px 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+            width: 100%;
+            min-width: 400px;
+        }
+
+        #game-area {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #setup {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        #setup input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        #setup button {
+            width: 100%;
+            padding: 12px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #setup button:hover {
+            background: #357abd;
+        }
+
+        .players-container {
+            display: grid;
+            margin-top: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            padding: 0 8px;
+        }
+
+        .player-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            padding: 12px 15px;
+            margin: 0 4px;
+            min-width: 180px;
+            transition: all 0.3s ease;
+        }
+
+        .player-card.active {
+            background: #ffe0e0 !important;
+            border-color: #ff4d4d !important;
+            box-shadow: 0 2px 8px rgba(255, 77, 77, 0.2);
+            animation: activePulse 1.5s ease infinite;
+        }
+
+        @keyframes activePulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #4a90e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+        }
+
+        .player-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: #343a40;
+            font-size: 0.95em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-score {
+            color: #28a745;
+            font-size: 0.85em;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 10px;
+            font-size: 0.8em;
+            color: #6c757d;
+        }
+
+        #question {
+            font-size: 4em;
+            margin: 40px 0;
+            color: #2c3e50;
+            text-align: center;
+            min-height: 80px;
+            font-weight: 600;
+        }
+
+        #answer {
+            font-size: 2em;
+            color: #d6336c;
+            margin: 25px 0;
+            text-align: center;
+            min-height: 60px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-width: 500px;
+            margin: 30px auto;
+        }
+
+        button {
+            padding: 14px 28px;
+            font-size: 1.05em;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .mode-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+        }
+
+        .mode-btn.active {
+            background: #4a90e2 !important;
+        }
+
+        .skip-btn {
+            background: #ffc107;
+            color: #343a40;
+        }
+
+        #judge-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #judge-buttons.visible {
+            opacity: 1;
+            height: 72px;
+        }
+
+        .judge-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .judge-btn.correct {
+            color: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        .judge-btn.correct:hover {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .judge-btn.wrong {
+            color: #f44336;
+            border-color: #f44336;
+        }
+
+        .judge-btn.wrong:hover {
+            background: #f44336;
+            color: white;
+        }
+
+        .player-card.rank-1 {
+            background: #ffd700;
+        }
+
+        .player-card.rank-2 {
+            background: #c0c0c0;
+        }
+
+        .player-card.rank-3 {
+            background: #cd7f32;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            #score-area {
+                min-width: unset;
+            }
+
+            .players-container {
+                grid-template-columns: 1fr;
+                padding: 0 10px;
+            }
+
+            #question {
+                font-size: 2.2em;
+            }
+
+            .player-card {
+                margin: 0 2px;
+            }
+
+            .status-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            #countdown {
+                position: static;
+                transform: none;
+                order: -1;
+            }
+
+            .timer-panel {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            #timerInput {
+                flex: 1;
+            }
+
+            .timer-btn {
+                width: auto;
+            }
+
+            @keyframes activePulse {
+                0% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.03);
+                }
+
+                100% {
+                    transform: scale(1);
+                }
+            }
+        }
+
+        .timer-panel {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            width: auto;
+            margin-left: auto;
+        }
+
+        #timerInput {
+            width: 40px;
+            padding: 8px;
+            border: 2px solid #4a90e2;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .timer-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timer-btn {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9em;
+            padding: 6px 16px;
+        }
+
+        .timer-btn:hover {
+            background: #357abd;
+        }
+
+        .game-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .current-players {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            max-width: 100%;
+        }
+
+        .player-tag {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: #f0f2f5;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .player-tag.active {
+            background: #ff4d4d !important;
+            color: white !important;
+            font-weight: bold;
+            animation: activePulse 1.5s ease infinite;
+            box-shadow: 0 2px 8px rgba(255, 77, 77, 0.3);
+        }
+
+        #countdown {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 35px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: relative;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
+
 <body>
     <div id="score-area">
-        <h2>🏆 得分榜</h2>
+        <h2>🏆 化学式大师榜</h2>
         <div class="players-container" id="players"></div>
     </div>
 
     <div id="game-area">
-        <h1>🧪 化学式大比拼</h1>
+        <h1>⚛️ 化学式大比拼</h1>
         <div id="setup">
             <input type="number" id="playerCount" placeholder="请输入玩家数量 (1-20)" min="1" max="20">
+            <input type="number" id="gameRounds" placeholder="请输入游戏次数" min="1" max="100">
             <button onclick="startGame()">▶️ 开始游戏</button>
         </div>
-        
+
         <div id="gameInterface" class="hidden">
-            <div class="mode-controls">
-                <button class="mode-btn active" onclick="setMode('formula')">🔤 猜名称</button>
-                <button class="mode-btn" onclick="setMode('name')">🧪 猜化学式</button>
-                <button class="mode-btn" onclick="setMode('mixed')">🎲 混合模式</button>
+            <div class="game-status">
+                <div class="status-row">
+                    <div id="countdown"></div>
+                    <div class="timer-panel">
+                        <input type="number" id="timerInput" value="5" min="3" max="30">
+                        <button class="timer-btn" onclick="applyTimer()">应用时间</button>
+                    </div>
+                </div>
+                <div class="current-players" id="currentPlayers"></div>
             </div>
-            
+            <div class="mode-controls">
+                <button class="mode-btn active" data-mode="symbol" onclick="setMode('symbol')">🔣 猜元素名</button>
+                <button class="mode-btn" data-mode="name" onclick="setMode('name')">🔤 猜符号</button>
+                <button class="mode-btn" data-mode="mixed" onclick="setMode('mixed')">🎲 混合模式</button>
+            </div>
+
             <div id="question"></div>
             <div class="controls">
-                <button onclick="showAnswer()">👀 显示答案</button>
+                <button onclick="showAnswer(true)">👀 显示答案</button>
                 <button class="skip-btn" onclick="skipQuestion()">⏭️ 跳过题目</button>
                 <div id="judge-buttons"></div>
             </div>
@@ -36,6 +476,311 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // 倒计时功能
+        let timerDuration = 5;
+        let countdownInterval = null;
+        let totalRounds = 0;
+        let isGameOver = false;
+
+        function applyTimer() {
+            timerDuration = parseInt(document.getElementById('timerInput').value);
+            alert(`倒计时已设置为 ${timerDuration} 秒`);
+        }
+
+        function startCountdown() {
+            clearInterval(countdownInterval);
+            let remaining = timerDuration;
+            const countdownElement = document.getElementById('countdown');
+
+            countdownInterval = setInterval(() => {
+                remaining--;
+                countdownElement.textContent = `${remaining}s`;
+
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    showAnswer(); // 自动触发时不传参数
+                }
+            }, 1000);
+        }
+
+        // 元素数据与核心逻辑
+        const elements = {
+            // 单质部分
+            "H₂": "氢气",
+            "N₂": "氮气",
+            "Cl₂": "氯气",
+            "O₂": "氧气",
+            "C": "碳",
+            "Si": "硅",
+            "S": "硫",
+            "P": "磷",
+            "Fe": "铁",
+            "Cu": "铜",
+            "Ag": "银",
+            "K": "钾",
+            "Ca": "钙",
+            "Na": "钠",
+            "Mg": "镁",
+            "Al": "铝",
+            "Zn": "锌",
+
+            // 氧化物部分
+            "H₂O": "水",
+            "SO₃": "三氧化硫",
+            "CO": "一氧化碳",
+            "CO₂": "二氧化碳",
+            "P₂O₅": "五氧化二磷",
+            "H₂O₂": "过氧化氢",
+            "CuO": "氧化铜",
+            "SO₂": "二氧化硫",
+            "CaO": "氧化钙",
+            "FeO": "氧化亚铁",
+            "Fe₂O₃": "氧化铁",
+            "Fe₃O₄": "四氧化三铁",
+            "MgO": "氧化镁",
+            "Al₂O₃": "氧化铝",
+            "MnO₂": "二氧化锰",
+
+            // 其他化合物
+            "HNO₃": "硝酸",
+            "H₂SO₄": "硫酸",
+            "HCl": "盐酸",
+            "H₂CO₃": "碳酸",
+            "NaOH": "氢氧化钠",
+            "KOH": "氢氧化钾",
+            "Ca(OH)₂": "氢氧化钙",
+            "Mg(OH)₂": "氢氧化镁",
+            "Al(OH)₃": "氢氧化铝",
+            "Zn(OH)₂": "氢氧化锌",
+            "Fe(OH)₃": "氢氧化铁",
+            "Fe(OH)₂": "氢氧化亚铁",
+            "Cu(OH)₂": "氢氧化铜",
+            "Ba(OH)₂": "氢氧化钡",
+            "NH₃·H₂O": "氨水",
+            "BaSO₄": "硫酸钡",
+            "NaCl": "氯化钠",
+            "CuCl₂": "氯化铜",
+            "AlCl₃": "氯化铝",
+            "KCl": "氯化钾",
+            "FeCl₂": "氯化亚铁",
+            "FeCl₃": "氯化铁",
+            "AgCl": "氯化银",
+            "CaCl₂": "氯化钙",
+            "MgCl₂": "氯化镁",
+            "BaCl₂": "氯化钡",
+            "ZnCl₂": "氯化锌",
+            "CuSO₄": "硫酸铜",
+            "KMnO₄": "高锰酸钾",
+            "K₂MnO₄": "锰酸钾",
+            "KClO₃": "氯酸钾",
+            "CaCO₃": "碳酸钙",
+            "KNO₃": "硝酸钾",
+            "NaNO₃": "硝酸钠",
+            "Fe(NO₃)₃": "硝酸铁",
+            "Fe(NO₃)₂": "硝酸亚铁",
+            "Al(NO₃)₃": "硝酸铝",
+            "Na₂CO₃": "碳酸钠",
+            "(NH₄)₂CO₃": "碳酸铵",
+            "NaHCO₃": "碳酸氢钠",
+            "Fe₂(SO₄)₃": "硫酸铁",
+            "FeSO₄": "硫酸亚铁",
+            "AgNO₃": "硝酸银",
+            "Ba(NO₃)₂": "硝酸钡",
+            "NH₄NO₃": "硝酸铵",
+
+            // 有机化合物
+            "CH₄": "甲烷",
+            "C₂H₅OH": "乙醇",
+            "C₆H₁₂O₆": "葡萄糖",
+            "C₁₂H₂₂O₁₁": "蔗糖"
+        };
+
+        let elementQueue = [];
+        let currentIndex = 0;
+        let currentElement;
+        let currentMode = 'symbol';
+        let players = [];
+        let currentPlayerIndex = -1;
+        const icons = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯',
+            '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦄'];
+
+        function initElementQueue() {
+            elementQueue = Object.entries(elements).map(([symbol, name]) => ({ symbol, name }));
+            shuffleArray(elementQueue);
+            currentIndex = 0;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function getNextElement() {
+            if (currentIndex >= elementQueue.length) {
+                shuffleArray(elementQueue);
+                currentIndex = 0;
+            }
+            return elementQueue[currentIndex++];
+        }
+
+        // 游戏逻辑
+        function newQuestion(changePlayer = true) {
+            if (isGameOver) return;
+
+            // 检查游戏结束条件
+            if (players.every(p => p.totalAnswers >= totalRounds)) {
+                gameOver();
+                return;
+            }
+
+            clearInterval(countdownInterval);
+            document.getElementById('countdown').textContent = "";
+            document.getElementById('judge-buttons').classList.remove('visible');
+            document.getElementById('answer').textContent = '';
+
+            if (changePlayer) {
+                const min = Math.min(...players.map(p => p.totalAnswers));
+                const candidates = players.filter(p => p.totalAnswers === min);
+                const next = candidates[Math.floor(Math.random() * candidates.length)];
+                currentPlayerIndex = players.findIndex(p => p.id === next.id);
+                players[currentPlayerIndex].totalAnswers++;
+            }
+
+            currentElement = getNextElement();
+
+            const mode = currentMode === 'mixed' ?
+                Math.random() > 0.5 ? 'symbol' : 'name' : currentMode;
+
+            currentQuestion = mode === 'symbol' ? currentElement.symbol : currentElement.name;
+            currentAnswer = mode === 'symbol' ? currentElement.name : currentElement.symbol;
+
+            document.getElementById('question').textContent = currentQuestion;
+            renderPlayers();
+            updatePlayersDisplay();
+            startCountdown();
+        }
+
+        function startGame() {
+            const count = parseInt(document.getElementById('playerCount').value);
+            const rounds = parseInt(document.getElementById('gameRounds').value);
+
+            if (!count || count < 1 || count > 20) return alert("请输入1-20之间的玩家数量");
+            if (!rounds || rounds < 1) return alert("请输入有效的游戏次数");
+
+            totalRounds = rounds;
+            isGameOver = false;
+
+            players = Array.from({ length: count }, (_, i) => ({
+                id: i + 1,
+                icon: icons[i % icons.length],
+                score: 0,
+                totalAnswers: 0,
+                correctAnswers: 0
+            }));
+
+            initElementQueue();
+            document.getElementById('gameInterface').classList.remove('hidden');
+            document.getElementById('setup').classList.add('hidden');
+            newQuestion();
+        }
+
+        function renderPlayers() {
+            const container = document.getElementById('players');
+            const sorted = [...players].sort((a, b) => b.score - a.score);
+
+            container.innerHTML = sorted.map((p, index) => {
+                // 生成排名样式
+                let rankClass = '';
+                if (index === 0) rankClass = 'rank-1';
+                else if (index === 1) rankClass = 'rank-2';
+                else if (index === 2) rankClass = 'rank-3';
+
+                // 检查是否是当前活跃玩家
+                const isActive = p.id === players[currentPlayerIndex]?.id;
+
+                return `
+            <div class="player-card ${rankClass} ${isActive ? 'active' : ''}">
+                <div class="avatar">${p.icon}</div>
+                <div class="player-info">
+                    <div class="player-name">玩家 ${p.id}</div>
+                    <div class="player-score">🎯 ${p.score} 分</div>
+                    <div class="player-stats">
+                        <span>答题: ${p.totalAnswers}/${totalRounds}</span>
+                        <span>正确: ${p.correctAnswers}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+            }).join('');
+        }
+        function handleJudgement(isCorrect) {
+            const p = players[currentPlayerIndex];
+            if (isCorrect) {
+                p.score += 1;
+                p.correctAnswers++;
+            }
+            renderPlayers();
+            newQuestion();
+        }
+
+        function showAnswer(isManual = false) {
+            clearInterval(countdownInterval); // 立即停止计时器
+
+            // 根据触发方式显示不同提示
+            if (!isManual) {
+                document.getElementById('countdown').textContent = "时间到！";
+            }
+
+            document.getElementById('answer').textContent = currentAnswer;
+            document.getElementById('judge-buttons').innerHTML = `
+        <button class="judge-btn correct" onclick="handleJudgement(true)">✓</button>
+        <button class="judge-btn wrong" onclick="handleJudgement(false)">✕</button>
+    `;
+            document.getElementById('judge-buttons').classList.add('visible');
+        }
+
+        function updatePlayersDisplay() {
+            const container = document.getElementById('currentPlayers');
+            container.innerHTML = players.map(p => `
+                <div class="player-tag ${p.id === players[currentPlayerIndex]?.id ? 'active' : ''}">
+                    ${p.icon} #${p.id}
+                </div>
+            `).join('');
+        }
+
+        function skipQuestion() {
+            newQuestion(false);
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            newQuestion(false);
+        }
+
+        function gameOver() {
+            clearInterval(countdownInterval);
+            isGameOver = true;
+
+            const sorted = [...players].sort((a, b) => b.score - a.score);
+            const ranking = sorted.map((p, i) =>
+                `${i + 1}. ${p.icon} 玩家 ${p.id} - 得分: ${p.score} (正确率: ${Math.round((p.correctAnswers / totalRounds) * 100) || 0}%)`
+            ).join('\n');
+
+            alert(`🎉 游戏结束！最终排名：\n${ranking}`);
+
+            // 重置界面
+            document.getElementById('gameInterface').classList.add('hidden');
+            document.getElementById('setup').classList.remove('hidden');
+            document.getElementById('countdown').textContent = "";
+        }
+    </script>
 </body>
+
 </html>
