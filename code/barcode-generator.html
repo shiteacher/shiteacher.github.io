@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强版条形码生成器</title>
+    <script src="./js/JsBarcode.all.min.js"></script>
+    <script src="./js/jszip.min.js"></script>
+    <script src="./js/FileSaver.min.js"></script>
+    <style>
+        :root {
+            --primary: #2196F3;
+            --secondary: #4CAF50;
+            --error: #f44336;
+            --success: #4CAF50;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 输入区域 */
+        .input-section {
+            margin: 0 1rem 2rem;
+            position: relative;
+        }
+
+        .input-header {
+            display: flex;
+            justify-content: flex-end;
+            margin: 0 1rem 0.5rem;
+        }
+
+        textarea {
+            width: calc(100% - 2rem - 2px);
+            /* 包含边框宽度 */
+            height: 150px;
+            padding: 1rem;
+            margin: 0 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            box-sizing: border-box;
+            display: block;
+        }
+
+        .input-header label {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333;
+            letter-spacing: 0.5px;
+            margin: auto;
+            /* 保持左对齐 */
+            padding-left: 4px;
+            position: relative;
+        }
+
+        .input-header label::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100px;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        /* 复制按钮 */
+        .copy-input-btn {
+            padding: 4px 12px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            right: 0;
+            max-width: 120px;
+            /* 固定最小宽度 */
+        }
+
+        .copy-input-btn:hover {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 控制面板 */
+        .controls-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin: 1rem;
+        }
+
+        select,
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        select {
+            border: 1px solid #ddd;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .primary-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .secondary-btn {
+            background: var(--secondary);
+            color: white;
+        }
+
+        /* 预览区域 */
+        .preview-grid {
+            width: calc(100% - 2rem - 2px);
+            /* 与输入框完全一致 */
+            margin: 0 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background: #fafafa;
+            box-sizing: border-box;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            margin: 1rem;
+            padding: 0.8rem;
+            border-radius: 4px;
+        }
+
+        .error {
+            background: #ffebee;
+            color: var(--error);
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+
+        .loading::after {
+            content: " ...";
+            animation: dots 1s infinite;
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: " .";
+            }
+
+            40% {
+                content: " ..";
+            }
+
+            60% {
+                content: " ...";
+            }
+
+            80%,
+            100% {
+                content: " ";
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 增强版条形码生成器</h1>
+            <p>输入内容（每行一个条形码），选择格式后生成</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-header">
+                <label>条形码输入</label>
+                <button class="copy-input-btn" onclick="copyInputContent()">📋 复制内容</button>
+            </div>
+            <textarea id="inputArea" placeholder="示例（注意不同格式的要求）：
+5901234123457  (EAN13)
+123456789012    (UPC-A)
+PRODUCT-CODE-39 (CODE39)
+[2023]ITEM-001  (CODE128)"></textarea>
+
+            <div class="controls-panel">
+                <select id="formatSelect">
+                    <option value="CODE128">CODE 128 (通用)</option>
+                    <option value="CODE39">CODE 39 (字母数字)</option>
+                    <option value="CODE93">CODE 93</option>
+                    <option value="EAN13">EAN-13 (商品条码)</option>
+                    <option value="EAN8">EAN-8</option>
+                    <option value="UPC">UPC-A</option>
+                    <option value="ITF14">ITF-14 (物流)</option>
+                    <option value="MSI">MSI Plessey</option>
+                    <option value="pharmacode">Pharmacode (药品)</option>
+                    <option value="codabar">Codabar (库德巴码)</option>
+                    <option value="I2OF5">Interleaved 2 of 5</option>
+                </select>
+                <button class="primary-btn" onclick="generateBarcodes()" id="generateBtn">生成条形码</button>
+                <button class="primary-btn" onclick="exportSVGs()" id="exportBtn">导出ZIP</button>
+                <button class="secondary-btn" onclick="processBarcodes('trim')">✂️ 去空白</button>
+                <button class="secondary-btn" onclick="processBarcodes('trimLast')">↵ 去末位</button>
+                
+            </div>
+            <div id="statusBar" class="status-bar"></div>
+        </div>
+
+        <div class="preview-grid" id="previewArea"></div>
+    </div>
+
+    <script>
+        let isLibsLoaded = false;
+
+        function copyInputContent() {
+            const input = document.getElementById('inputArea');
+            navigator.clipboard.writeText(input.value).then(() => {
+                showCopyNotice('✅ 已复制');
+            }).catch(() => {
+                showCopyNotice('❌ 复制失败');
+            });
+        }
+
+        function showCopyNotice(message) {
+            const btn = document.querySelector('.copy-input-btn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = message;
+            btn.style.opacity = 0.9;
+
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.style.opacity = 1;
+            }, 1500);
+        }
+
+        function processBarcodes(type) {
+            const input = document.getElementById('inputArea');
+            let codes = input.value.split('\n');
+
+            codes = codes.map(code => {
+                let processed = code.trimEnd();
+                if (type === 'trimLast') {
+                    processed = processed.slice(0, -1).trimEnd();
+                }
+                return processed;
+            }).filter(code => code); // 过滤空行
+
+            input.value = codes.join('\n');
+            updateStatus(`✅ 已执行 ${type === 'trim' ? '去空白' : '去末位'} 操作`);
+        }
+
+        function checkDependencies() {
+            return !!window.JsBarcode && !!window.JSZip && !!window.saveAs;
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.className = `status-bar ${type}`;
+            statusBar.innerHTML = message;
+
+            if (type === 'error') {
+                console.error(message);
+            } else if (type === 'success') {
+                console.log(message);
+            }
+        }
+
+        window.generateBarcodes = function () {
+            if (!checkDependencies()) {
+                updateStatus('❌ 必需库未加载，请检查网络连接', 'error');
+                return;
+            }
+
+            const input = document.getElementById('inputArea').value.trim();
+            const format = document.getElementById('formatSelect').value;
+            const preview = document.getElementById('previewArea');
+
+            if (!input) {
+                updateStatus('⚠️ 请输入条形码内容', 'error');
+                return;
+            }
+
+            preview.innerHTML = '';
+            const codes = input.split('\n').filter(c => c.trim());
+
+            codes.forEach((content, index) => {
+                const card = document.createElement('div');
+                card.className = 'barcode-card';
+
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('viewBox', '0 0 300 150');
+                svg.style.maxWidth = '100%';
+                svg.style.height = '120px';
+                svg.dataset.content = content; // 添加内容存储
+
+                try {
+                    JsBarcode(svg, content, {
+                        format: format,
+                        displayValue: true,
+                        width: 2,
+                        height: 80,
+                        margin: 15,
+                        fontOptions: 'bold',
+                        fontSize: 14,
+                        valid: (valid) => {
+                            if (!valid) throw new Error('格式无效');
+                        }
+                    });
+                } catch (e) {
+                    svg.innerHTML = `
+                        <text x="50%" y="50%"
+                              dominant-baseline="middle"
+                              text-anchor="middle"
+                              fill="var(--error)"
+                              font-size="12"
+                              font-family="monospace">
+                            ! ${e.message} !
+                        </text>
+                    `;
+                }
+
+                card.appendChild(svg);
+                preview.appendChild(card);
+            });
+
+            updateStatus(`✅ 成功生成 ${codes.length} 个条形码`, 'success');
+        };
+
+        // 添加文件名处理函数
+        function sanitizeFileName(name) {
+            return name
+                .trim()
+                .replace(/\s+/g, '_')
+                .replace(/[^\w-]/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/^_+/, '')
+                .replace(/_+$/, '')
+                .substring(0, 50)
+                || 'barcode';
+        }
+
+        window.exportSVGs = async function () {
+            if (!checkDependencies()) {
+                updateStatus('❌ 必需库未加载', 'error');
+                return;
+            }
+
+            const svgs = document.querySelectorAll('svg');
+            if (svgs.length === 0) {
+                updateStatus('⚠️ 请先生成条形码', 'error');
+                return;
+            }
+
+            try {
+                updateStatus('⏳ 正在打包文件...', 'info loading');
+
+                const zip = new JSZip();
+                const usedNames = new Map();
+
+                Array.from(svgs).forEach((svg, index) => {
+                    // 从 SVG 元素获取原始内容
+                    const originalContent = svg.dataset.content || `barcode_${index + 1}`;
+                    const baseName = sanitizeFileName(originalContent);
+                    let finalName = baseName;
+
+                    // 处理重复文件名
+                    if (usedNames.has(baseName)) {
+                        const count = usedNames.get(baseName) + 1;
+                        usedNames.set(baseName, count);
+                        finalName = `${baseName}_${count}`;
+                    } else {
+                        usedNames.set(baseName, 1);
+                    }
+
+                    // 生成最终文件名
+                    const fileName = `${finalName}.svg`;
+                    const svgString = new XMLSerializer().serializeToString(svg);
+                    zip.file(fileName, svgString);
+                });
+
+                const content = await zip.generateAsync({ type: 'blob' });
+                saveAs(content, `barcodes_${Date.now()}.zip`);
+                updateStatus('✅ 导出完成，开始下载', 'success');
+            } catch (e) {
+                updateStatus(`❌ 导出失败: ${e.message}`, 'error');
+            }
+        };
+
+        window.addEventListener('load', () => {
+            if (!checkDependencies()) {
+                updateStatus('⚠️ 正在加载必需库...', 'info loading');
+                document.getElementById('generateBtn').disabled = true;
+                document.getElementById('exportBtn').disabled = true;
+
+                setTimeout(() => {
+                    if (!checkDependencies()) {
+                        updateStatus('❌ 无法加载必需库，请<a href="#local-setup">使用本地文件</a>', 'error');
+                    } else {
+                        document.getElementById('generateBtn').disabled = false;
+                        document.getElementById('exportBtn').disabled = false;
+                        updateStatus('✔️ 所有库已加载完成', 'success');
+                    }
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+
+</html>

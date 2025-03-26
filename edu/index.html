@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>史老师科学平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* 动画系统 */
+        @keyframes orbit {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        .animate-orbit {
+            animation: orbit 25s linear infinite;
+        }
+
+        .animate-orbit-reverse {
+            animation: orbit 35s linear infinite reverse;
+        }
+
+        .animate-pulse {
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        /* 实验卡片样式 */
+        .experiment-card {
+            @apply bg-white shadow-lg overflow-hidden transition-all duration-300;
+            border: 1px solid rgba(229, 231, 235, 0.6);
+            border-radius: 20px;
+            transform: translate3d(0, 0, 0);
+            -webkit-transform: translate3d(0, 0, 0);
+        }
+
+        .experiment-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 新增图片容器圆角 */
+        .experiment-image-container {
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        /* 精确控制动画范围 */
+        @keyframes expanded {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            20% {
+                transform: translate(25px, -18px) scale(0.96);
+            }
+
+            40% {
+                transform: translate(-20px, 15px) scale(0.98);
+            }
+
+            60% {
+                transform: translate(18px, 20px) scale(0.94);
+            }
+
+            80% {
+                transform: translate(-15px, -12px) scale(0.97);
+            }
+        }
+
+        .animate-expanded {
+            animation: expanded 10s infinite linear;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .experiment-image-container {
+                min-height: 18rem;
+            }
+
+            .element-battle-svg {
+                transform: scale(1.1);
+            }
+
+            /* 调整电子轨道半径 */
+            @keyframes orbit {
+                0% {
+                    transform: rotate(0deg) translateX(120px) rotate(0deg);
+                }
+
+                100% {
+                    transform: rotate(360deg) translateX(120px) rotate(-360deg);
+                }
+            }
+        }
+
+        /* 启用硬件加速 */
+        .electron-orbit {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-science text-indigo-600 text-2xl"></i>
+                    <span class="text-xl font-bold text-gray-800">史老师科学平台</span>
+                </div>
+
+                <div class="hidden md:flex space-x-4">
+                    <a href="#physics"
+                        class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl hover:bg-indigo-100 transition">
+                        物理实验
+                    </a>
+                    <a href="#chemistry"
+                        class="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition">
+                        化学模拟
+                    </a>
+                    <a href="#biology"
+                        class="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl hover:bg-amber-100 transition">
+                        生物探索
+                    </a>
+                </div>
+
+                <button class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-bars text-gray-600 text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 平台介绍 -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-500 rounded-2xl shadow-xl overflow-hidden">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="p-8 md:p-12 text-white flex flex-col justify-center">
+                        <h1 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                            史老师科学平台
+                        </h1>
+                        <p class="text-lg opacity-90 mb-6">
+                            融合虚拟仿真与实时数据分析，提供安全高效的跨学科实验环境
+                        </p>
+                        <div class="hidden md:flex space-x-3">
+                            <!-- 物理实验 -->
+                            <a href="#physics" class="px-4 py-2 bg-white text-indigo-600 rounded-xl font-medium
+                                       hover:bg-indigo-50 transition-all shadow-sm hover:shadow-md cursor-pointer
+                                       text-sm whitespace-nowrap">
+                                <i class="fas fa-cogs mr-2 text-indigo-500 text-[0.95em]"></i>
+                                物理实验
+                            </a>
+
+                            <!-- 化学模拟 -->
+                            <a href="#chemistry" class="px-4 py-2 bg-white text-emerald-600 rounded-xl font-medium
+                                       hover:bg-emerald-50 transition-all shadow-sm hover:shadow-md cursor-pointer
+                                       text-sm whitespace-nowrap">
+                                <i class="fas fa-atom mr-2 text-emerald-500 text-[0.95em]"></i>
+                                化学模拟
+                            </a>
+
+                            <!-- 生物探索 -->
+                            <a href="#biology" class="px-4 py-2 bg-white text-amber-600 rounded-xl font-medium
+                                       hover:bg-amber-50 transition-all shadow-sm hover:shadow-md cursor-pointer
+                                       text-sm whitespace-nowrap">
+                                <i class="fas fa-dna mr-2 text-amber-500 text-[0.95em]"></i>
+                                生物探索
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 动态模型 -->
+                    <div class="p-8 bg-white/10 flex items-center justify-center relative min-h-[400px]">
+                        <div class="relative w-64 h-64">
+                            <div class="absolute inset-0 flex items-center justify-center animate-pulse">
+                                <div class="w-16 h-16 bg-white/20 rounded-full"></div>
+                                <div class="absolute w-6 h-6 bg-white rounded-full shadow-lg"></div>
+                            </div>
+                            <div class="absolute inset-0 animate-orbit">
+                                <div class="w-full h-full border-2 border-white/20 rounded-full">
+                                    <div class="absolute -top-3 left-1/2 -ml-3 w-6 h-6 bg-white rounded-full shadow-lg">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="absolute inset-0 animate-orbit-reverse"
+                                style="width: 80%; height: 80%; margin: 10%">
+                                <div class="w-full h-full border-2 border-white/20 rounded-full">
+                                    <div class="absolute -top-3 left-1/2 -ml-3 w-6 h-6 bg-white rounded-full shadow-lg">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 物理实验模块 -->
+    <section id="physics" class="py-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">物理实验中心</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">经典物理现象的可视化分析与定量研究</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="experiment-card">
+                    <div class="experiment-image-container h-48 bg-indigo-50 flex items-center justify-center">
+                        <svg viewBox="0 0 200 120" class="w-4/5">
+                            <!-- 杠杆主体 -->
+                            <rect x="20" y="55" width="160" height="10" fill="#4F46E5" rx="5" />
+
+                            <!-- 支点三角形 -->
+                            <path d="M100 35 L110 65 L90 65 Z" fill="#6366F1" />
+
+                            <!-- 左侧力臂 -->
+                            <g transform="translate(50 45)">
+                                <rect x="-3" y="0" width="6" height="30" fill="#818CF8" />
+                                <circle cx="0" cy="0" r="6" fill="#4F46E5" />
+                                <path d="M-8 30 L8 30 L0 45 Z" fill="#EF4444" />
+                                <text x="0" y="25" text-anchor="middle" fill="#4F46E5" font-size="12"></text>
+                            </g>
+
+                            <!-- 右侧力臂 -->
+                            <g transform="translate(150 45)">
+                                <rect x="-3" y="0" width="6" height="30" fill="#818CF8" />
+                                <circle cx="0" cy="0" r="6" fill="#4F46E5" />
+                                <path d="M-8 30 L8 30 L0 45 Z" fill="#10B981" />
+                                <text x="0" y="25" text-anchor="middle" fill="#4F46E5" font-size="12"></text>
+                            </g>
+
+                            <!-- 刻度线 -->
+                            <g stroke="#A5B4FC" stroke-width="1">
+                                <path d="M40 70 v10 M60 70 v10 M80 70 v10 M120 70 v10 M140 70 v10 M160 70 v10" />
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">杠杆原理模拟器</h3>
+                        <p class="text-sm text-gray-600 mb-3">支持动态调节动力方向，实时计算力矩平衡</p>
+                        <a href="./ganggan/index.html"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition cursor-pointer">
+                            <i class="fas fa-balance-scale mr-2 text-sm"></i>进入模拟
+                        </a>
+                    </div>
+                </div>
+
+                <div class="experiment-card">
+                    <div class="experiment-image-container h-48 bg-indigo-50 flex items-center justify-center">
+                        <svg viewBox="0 0 200 200" class="w-4/5">
+                            <!-- 背景齿轮 -->
+                            <circle cx="100" cy="100" r="70" fill="none" class="stroke-indigo-200" stroke-width="8"
+                                stroke-dasharray="6 12" transform="rotate(15 100 100)" />
+
+                            <!-- 动态齿轮 -->
+                            <g class="animate-spin" style="transform-origin: 100px 100px; animation-duration: 25s">
+                                <path
+                                    d="M140 100a40 40 0 1 1-80 0 40 40 0 0 1 80 0zm-68.6-2.8l-15-15m15 15l-5.6 5.6m5.6-5.6l15-15"
+                                    class="stroke-indigo-400" stroke-width="3" fill="none" />
+                                <circle cx="100" cy="100" r="20" fill="#6366F1" opacity="0.8" />
+                            </g>
+
+                            <!-- 进度波纹 -->
+                            <circle cx="100" cy="100" r="45" fill="none" class="stroke-indigo-500" stroke-width="2"
+                                stroke-dasharray="0.1 9" opacity="0.8" />
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-1">更多模块开发中</h3>
+                        <p class="text-sm text-gray-600 mb-3">新实验模块正在紧锣密鼓开发</p>
+                        <a href="#"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition cursor-pointer">
+                            <i class="fas fa-hammer mr-2 text-sm"></i>敬请期待
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 化学实验模块 -->
+    <section id="chemistry" class="py-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">化学模拟中心</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">分子层面的化学反应可视化模拟</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="experiment-card">
+                    <div class="experiment-image-container h-48 bg-emerald-50 flex items-center justify-center p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" class="element-battle-svg"
+                            width="100%" height="100%">
+                            <style>
+                                /* 精确的轨道动画 */
+                                @keyframes electron-orbit {
+                                    0% {
+                                        transform: rotate(0deg) translateX(140px) rotate(0deg);
+                                    }
+
+                                    100% {
+                                        transform: rotate(360deg) translateX(140px) rotate(-360deg);
+                                    }
+                                }
+                            </style>
+
+                            <!-- 分子核心 (中心定位) -->
+                            <g transform="translate(400,300)">
+                                <!-- 原子核光环 -->
+                                <circle r="100" fill="url(#nucleus-gradient)" opacity="0.8" />
+
+                                <!-- 电子轨道系统 -->
+                                <g class="electron-orbit" style="animation: electron-orbit 12s linear infinite">
+                                    <circle r="8" fill="#10B981">
+                                        <!-- 脉冲效果 -->
+                                        <animate attributeName="r" values="8;10;8" dur="1.5s"
+                                            repeatCount="indefinite" />
+                                    </circle>
+                                </g>
+
+                                <!-- 元素符号矩阵 (放大1.3倍) -->
+                                <g transform="scale(1.3)">
+                                    <g class="element-symbol" font-size="64" font-weight="700" fill="#059669">
+                                        <text x="-180" y="-80" transform="rotate(-30)">C</text>
+                                        <text x="160" y="-80" transform="rotate(30)">O</text>
+                                        <text x="0" y="140">H</text>
+                                    </g>
+                                </g>
+
+                                <!-- 连接线 (加粗并延长) -->
+                                <g stroke="#6EE7B7" stroke-width="4" stroke-linecap="round">
+                                    <path d="M-140-100L0 0" opacity="0.8">
+                                        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.5s"
+                                            repeatCount="indefinite" />
+                                    </path>
+                                    <path d="M140-100L0 0" opacity="0.6">
+                                        <animate attributeName="opacity" values="0.6;0.3;0.6" dur="1.2s"
+                                            repeatCount="indefinite" />
+                                    </path>
+                                </g>
+                            </g>
+
+                            <!-- 计分板 (保持原位置) -->
+                            <g transform="translate(600,500)">
+                                <rect width="160" height="48" rx="24" fill="#059669" opacity="0.1" />
+                                <text x="80" y="28" font-size="24" font-weight="600" fill="#059669"
+                                    text-anchor="middle">SCORE: 0</text>
+                            </g>
+
+                            <defs>
+                                <radialGradient id="nucleus-gradient">
+                                    <stop offset="0%" stop-color="#D1FAE5" />
+                                    <stop offset="100%" stop-color="#059669" stop-opacity="0.2" />
+                                </radialGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">元素大比拼</h3>
+                        <p class="text-sm text-gray-600 mb-3">挑战原素符号和元素名称的精准对应！</p>
+                        <a href="./yuansu/index.html"
+                            class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition cursor-pointer">
+                            <i class="fas fa-play mr-2 text-sm"></i>进入比拼
+                        </a>
+                    </div>
+                </div>
+                <div class="experiment-card">
+                    <div
+                        class="experiment-image-container h-48 bg-emerald-50 flex items-center justify-center overflow-hidden">
+                        <svg viewBox="0 0 200 200" class="w-full">
+                            <!-- 调整后的烧杯容器 -->
+                            <path d="M50 60h100v70a8 8 0 0 1-8 8H58a8 8 0 0 1-8-8V60"
+                                class="fill-emerald-100 stroke-emerald-600" stroke-width="1.5" />
+
+                            <!-- 新版水分子式 -->
+                            <text x="100" y="110" class="text-[17px] font-semibold fill-emerald-800"
+                                style="font-family: 'Segoe UI', sans-serif; letter-spacing: -0.05em">
+                                H<tspan font-size="12" dy="-5">₂</tspan>O
+                            </text>
+
+                            <!-- 精确对齐的化学符号 -->
+                            <g transform="translate(100,90)">
+                                <g class="animate-expanded">
+                                    <circle r="14" class="fill-emerald-50 stroke-emerald-400" />
+                                    <text x="0" y="2" class="text-[10px] font-bold fill-emerald-700"
+                                        dominant-baseline="middle" text-anchor="middle">
+                                        CO<tspan font-size="6" dy="3">2</tspan>
+                                    </text>
+                                </g>
+                                <g class="animate-expanded" style="animation-delay: -2s">
+                                    <circle r="12" class="fill-emerald-50 stroke-emerald-400" />
+                                    <text x="0" y="1" class="text-[10px] font-bold fill-emerald-700"
+                                        dominant-baseline="middle" text-anchor="middle">
+                                        Na<tspan font-size="8" dy="-2">+</tspan>
+                                    </text>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">化学式大比拼</h3>
+                        <p class="text-sm text-gray-600 mb-3">化学式快速识别挑战，成为物质组成记忆达人！</p>
+                        <a href="./huaxueshi/index.html"
+                            class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition cursor-pointer">
+                            <i class="fas fa-play mr-2 text-sm"></i>进入比拼
+                        </a>
+                    </div>
+                </div>
+
+                <div class="experiment-card">
+                    <div class="experiment-image-container h-48 bg-emerald-50 flex items-center justify-center">
+                        <svg viewBox="0 0 200 200" class="w-4/5">
+                            <!-- 背景齿轮 -->
+                            <circle cx="100" cy="100" r="70" fill="none" class="stroke-emerald-200" stroke-width="8"
+                                stroke-dasharray="6 12" transform="rotate(15 100 100)" />
+
+                            <!-- 动态齿轮 -->
+                            <g class="animate-spin" style="transform-origin: 100px 100px; animation-duration: 25s">
+                                <path
+                                    d="M140 100a40 40 0 1 1-80 0 40 40 0 0 1 80 0zm-68.6-2.8l-15-15m15 15l-5.6 5.6m5.6-5.6l15-15"
+                                    class="stroke-emerald-400" stroke-width="3" fill="none" />
+                                <circle cx="100" cy="100" r="20" class="fill-emerald-600" opacity="0.9" />
+                            </g>
+
+                            <!-- 进度波纹 -->
+                            <circle cx="100" cy="100" r="45" fill="none" class="stroke-emerald-500 animate-pulse"
+                                stroke-width="2" stroke-dasharray="0.1 9" opacity="0.8" />
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">更多模块开发中</h3>
+                        <p class="text-sm text-gray-600 mb-3">新实验模块正在紧锣密鼓开发</p>
+                        <a href="#"
+                            class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition cursor-pointer">
+                            <i class="fas fa-play mr-2 text-sm"></i>敬请期待
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 生物实验模块 -->
+    <section id="biology" class="py-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">生物探索中心</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">生命科学微观结构的可视化探索</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="experiment-card">
+                    <div class="experiment-image-container h-48 bg-amber-50 flex items-center justify-center">
+                        <svg viewBox="0 0 200 200" class="w-4/5">
+                            <circle cx="100" cy="100" r="80" fill="none" class="stroke-amber-400" stroke-width="3" />
+                            <circle cx="100" cy="100" r="30" class="fill-amber-600" />
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">细胞结构解析</h3>
+                        <a href="#"
+                            class="inline-flex items-center px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition cursor-pointer">
+                            <i class="fas fa-play mr-2 text-sm"></i>进入实验
+                        </a>
+                    </div>
+                </div>
+
+                <div class="experiment-card">
+                    <div class="experiment-image-container h-48 bg-amber-50 flex items-center justify-center">
+                        <svg viewBox="0 0 200 200" class="w-4/5">
+                            <!-- 背景齿轮 -->
+                            <circle cx="100" cy="100" r="70" fill="none" class="stroke-amber-200" stroke-width="8"
+                                stroke-dasharray="6 12" transform="rotate(15 100 100)" />
+
+                            <!-- 动态齿轮 -->
+                            <g class="animate-spin" style="transform-origin: 100px 100px; animation-duration: 25s">
+                                <path
+                                    d="M140 100a40 40 0 1 1-80 0 40 40 0 0 1 80 0zm-68.6-2.8l-15-15m15 15l-5.6 5.6m5.6-5.6l15-15"
+                                    class="stroke-amber-400" stroke-width="3" fill="none" />
+                                <circle cx="100" cy="100" r="20" class="fill-amber-600" opacity="0.9" />
+                            </g>
+
+                            <!-- 进度波纹 -->
+                            <circle cx="100" cy="100" r="45" fill="none" class="stroke-amber-500 animate-pulse"
+                                stroke-width="2" stroke-dasharray="0.1 9" opacity="0.8" />
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">更多模块开发中</h3>
+                        <p class="text-sm text-gray-600 mb-3">新实验模块正在紧锣密鼓开发</p>
+                        <a href="#"
+                            class="inline-flex items-center px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition cursor-pointer">
+                            <i class="fas fa-play mr-2 text-sm"></i>敬请期待
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // 移动端菜单切换
+        document.querySelector('button').addEventListener('click', () => {
+            document.querySelector('.md\\:hidden').classList.toggle('hidden');
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 卡片入场动画
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.experiment-card').forEach(card => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            observer.observe(card);
+        });
+    </script>
+</body>
+
+</html>

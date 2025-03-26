@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快捷路径处理工具</title>
+    <style>
+        :root {
+            --primary: #2196F3;
+            --success: #4CAF50;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .input-container {
+            position: relative;
+            padding: 0 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        textarea.input-field {
+            height: 150px;
+            resize: vertical;
+        }
+
+        .copy-input-btn {
+            max-width: 100px;
+            padding: 0.3rem 0.6rem;
+            background: rgba(0, 0, 0, 0.08);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 12px;
+        }
+
+        .copy-input-btn:hover {
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            padding: 0 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        button {
+            padding: 0.8rem 1.2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .result-box {
+            position: relative;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            background: #fafafa;
+            margin: 0 1rem;
+        }
+
+        #result {
+            padding: 1.5rem;
+            font-family: Consolas, monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            min-height: 120px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.08);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(0, 0, 0, 0.12);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 快捷路径处理工具</h1>
+            <p>批量处理条形码与路径拼接</p>
+        </div>
+
+        <div class="input-container">
+            <div class="label-row">
+                <label>条形码列表（每行一个）</label>
+                <button class="copy-input-btn" onclick="copyBarcodes()">📋 复制内容</button>
+            </div>
+            <textarea id="barcodes" class="input-field" placeholder="示例：
+123456
+ABC-001
+ITEM-2023"></textarea>
+        </div>
+
+        <div class="input-container">
+            <label>目标路径</label>
+            <input type="text" id="path" class="input-field" placeholder="例如：D:\documents\">
+        </div>
+
+        <div class="input-container">
+            <label>文件后缀</label>
+            <input type="text" id="suffix" class="input-field" value=".pdf" placeholder="例如：.pdf">
+        </div>
+
+        <div class="button-group">
+            <button onclick="combinePaths()">
+                <span>📁</span> 生成路径
+            </button>
+            <button onclick="stripSpaces()">
+                <span>✂️</span> 去空格
+            </button>
+            <button onclick="stripLastChar()">
+                <span>🔠</span> 去末位
+            </button>
+        </div>
+
+        <div class="result-box">
+            <button class="copy-btn" onclick="copyResult()">📋 复制</button>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 路径规范化
+        function normalizePath(rawPath) {
+            let path = rawPath.trim()
+                .replace(/^["']+|["']+$/g, '')
+                .replace(/\//g, '\\')
+                .replace(/\\+/g, '\\');
+
+            if (path.length > 0 && !path.endsWith('\\')) {
+                path += '\\';
+            }
+            return path;
+        }
+
+        // 处理并更新输入框内容
+        function processInput(processor) {
+            const textarea = document.getElementById('barcodes');
+            const processed = textarea.value.split('\n')
+                .map(line => processor(line.trimEnd()))
+                .join('\n');
+            textarea.value = processed;
+        }
+
+        // 主要功能
+        function combinePaths() {
+            const rawPath = document.getElementById('path').value;
+            const suffix = document.getElementById('suffix').value;
+            const fixedPath = normalizePath(rawPath);
+
+            const barcodes = document.getElementById('barcodes').value.split('\n');
+            const result = barcodes
+                .map(code => code.trimEnd())
+                .filter(code => code)
+                .map(code => `${fixedPath}${code}${suffix}`.replace(/\\\\/g, '\\'))
+                .join('\n');
+
+            document.getElementById('result').textContent = result;
+        }
+
+        function stripSpaces() {
+            processInput(line => line.trimEnd());
+        }
+
+        function stripLastChar() {
+            processInput(line => line.slice(0, -1));
+        }
+
+        // 复制功能
+        function copyBarcodes() {
+            const textarea = document.getElementById('barcodes');
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                showCopyNotice('✅ 已复制', document.querySelector('.copy-input-btn'));
+            }).catch(() => {
+                showCopyNotice('❌ 失败', document.querySelector('.copy-input-btn'));
+            });
+        }
+
+        function copyResult() {
+            const result = document.getElementById('result').textContent;
+            navigator.clipboard.writeText(result).then(() => {
+                showCopyNotice('✅ 已复制', document.querySelector('.copy-btn'));
+            }).catch(() => {
+                showCopyNotice('❌ 失败', document.querySelector('.copy-btn'));
+            });
+        }
+
+        // 提示系统
+        function showCopyNotice(message, element) {
+            const originalText = element.innerHTML;
+            element.innerHTML = message;
+            setTimeout(() => {
+                element.innerHTML = originalText;
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>
